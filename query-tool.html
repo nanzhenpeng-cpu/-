@@ -132,19 +132,31 @@
       margin-top: 0.5rem;
       display: none;
     }
+    .info-msg {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      color: #1976d2;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🔍 查询工具</h1>
-    <p class="subtitle">输入指令获取答案</p>
+    <p class="subtitle">输入指令获取答案（支持用"/"合并查询）</p>
     
     <div class="input-group">
-      <input type="text" id="cmdInput" placeholder="输入指令，例如：iphone17" autofocus>
+      <input type="text" id="cmdInput" placeholder="例如：iphone17 或 iphone17/iphone16pro" autofocus>
       <button onclick="showAnswer()">查询</button>
     </div>
     
     <div id="answer" class="empty">输入指令后，答案将显示在这里</div>
+    
+    <div class="info-msg" id="infoMsg"></div>
     
     <button class="copy-btn" onclick="copyAnswer()" style="display:none;" id="copyBtn">📋 复制答案</button>
     
@@ -178,22 +190,61 @@
 
     function getAnswer(cmd) {
       const trimmedCmd = cmd.trim().toLowerCase().replace(/\s+/g, '');
-      // 精确匹配
+      
+      // 检查是否包含 "/"（多指令查询）
+      if (trimmedCmd.includes('/')) {
+        return getIntersectionAnswer(trimmedCmd);
+      }
+      
+      // 单指令查询
       if (answers[trimmedCmd]) {
         return answers[trimmedCmd];
       }
       return null;
     }
 
+    function getIntersectionAnswer(cmd) {
+      const commands = cmd.split('/').map(c => c.trim()).filter(c => c);
+      
+      // 检查所有指令是否都存在
+      for (const command of commands) {
+        if (!answers[command]) {
+          return null; // 指令不存在
+        }
+      }
+      
+      // 如果只有一个指令，直接返回
+      if (commands.length === 1) {
+        return answers[commands[0]];
+      }
+      
+      // 获取第一个指令的答案并转换为数组
+      let result = new Set(answers[commands[0]].split('\n'));
+      
+      // 与其他指令的答案取交集
+      for (let i = 1; i < commands.length; i++) {
+        const currentAnswers = new Set(answers[commands[i]].split('\n'));
+        result = new Set([...result].filter(item => currentAnswers.has(item)));
+      }
+      
+      // 转换回字符串，保持原始顺序
+      const firstList = answers[commands[0]].split('\n');
+      const resultArray = firstList.filter(item => result.has(item));
+      
+      return resultArray.length > 0 ? resultArray.join('\n') : null;
+    }
+
     function showAnswer() {
       const cmd = document.getElementById('cmdInput').value.trim();
       const answerDiv = document.getElementById('answer');
       const copyBtn = document.getElementById('copyBtn');
+      const infoMsg = document.getElementById('infoMsg');
       
       if (!cmd) {
         answerDiv.textContent = "请输入指令";
         answerDiv.className = "empty";
         copyBtn.style.display = "none";
+        infoMsg.style.display = "none";
         return;
       }
 
@@ -202,10 +253,24 @@
         answerDiv.textContent = result;
         answerDiv.className = "";
         copyBtn.style.display = "inline-block";
+        
+        // 显示查询类型提示
+        if (cmd.includes('/')) {
+          const commands = cmd.split('/').length;
+          infoMsg.textContent = `✓ 显示${commands}个指令都包含的共同项`;
+          infoMsg.style.display = "block";
+        } else {
+          infoMsg.style.display = "none";
+        }
       } else {
-        answerDiv.textContent = `❓ 未找到"${cmd}"的答案\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+        if (cmd.includes('/')) {
+          answerDiv.textContent = `❓ 查询失败\n\n请检查：\n1. 是否所有指令都存在\n2. 多个指令是否有共同项\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+        } else {
+          answerDiv.textContent = `❓ 未找到"${cmd}"的答案\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+        }
         answerDiv.className = "";
         copyBtn.style.display = "none";
+        infoMsg.style.display = "none";
       }
 
       // 更新分享链接
@@ -243,7 +308,7 @@
       }, 2000);
     }
 
-    // 支持 URL 参数：?q=iphone17
+    // 支持 URL 参数：?q=iphone17或?q=iphone17/iphone16pro
     const urlParams = new URLSearchParams(window.location.search);
     const q = urlParams.get('q');
     if (q) {
