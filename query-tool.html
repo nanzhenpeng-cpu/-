@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>自定义查询工具</title>
+  <title>查询工具</title>
   <style>
     * {
       margin: 0;
@@ -11,162 +11,208 @@
       box-sizing: border-box;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 50%, #FF8C69 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 1rem;
+      padding: 2rem 1rem;
     }
-    .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-      padding: 2rem;
-      max-width: 600px;
+    
+    .wrapper {
       width: 100%;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 0.5rem;
-      font-size: 1.8rem;
-    }
-    .subtitle {
-      color: #666;
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-    }
-    .input-group {
+      max-width: 500px;
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.5s ease-in;
     }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .instruction {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.75rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+    
+    .input-box {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    
     input {
-      flex: 1;
-      padding: 0.8rem;
+      width: 100%;
+      padding: 1.2rem;
       font-size: 1rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      transition: border-color 0.3s;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transition: all 0.3s ease;
+      font-weight: 500;
     }
+    
     input:focus {
       outline: none;
-      border-color: #667eea;
-    }
-    button {
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      font-weight: bold;
-    }
-    button:hover {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+      background: white;
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
     }
-    button:active {
-      transform: translateY(0);
+    
+    input::placeholder {
+      color: #aaa;
+      font-weight: 400;
     }
-    #answer {
-      background: #f8f9fa;
-      border-left: 4px solid #667eea;
+    
+    .answer-container {
+      width: 100%;
+      min-height: 200px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
       padding: 1.5rem;
-      border-radius: 8px;
-      min-height: 3rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      word-break: break-word;
-      white-space: pre-wrap;
-      line-height: 1.8;
+      align-items: center;
+      text-align: center;
+      animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    #answer {
       color: #333;
       font-size: 0.95rem;
+      line-height: 2;
+      word-break: break-word;
+      white-space: pre-wrap;
+      text-align: left;
+      width: 100%;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 0.5rem;
     }
-    #answer.empty {
+    
+    #answer::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    #answer::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    #answer::-webkit-scrollbar-thumb {
+      background: rgba(255, 107, 107, 0.3);
+      border-radius: 3px;
+    }
+    
+    #answer::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 107, 107, 0.5);
+    }
+    
+    .empty-state {
       color: #999;
-      font-style: italic;
-    }
-    .copy-btn {
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      font-size: 0.9rem;
-      background: #f0f0f0;
-      color: #333;
-      border: 1px solid #ddd;
-      cursor: pointer;
-    }
-    .copy-btn:hover {
-      background: #e0e0e0;
-    }
-    .share-section {
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 2px solid #e0e0e0;
-    }
-    .share-section h3 {
-      color: #333;
       font-size: 1rem;
-      margin-bottom: 0.8rem;
+      font-style: italic;
+      font-weight: 300;
     }
-    .share-input {
-      display: flex;
-      gap: 0.5rem;
+    
+    .error-state {
+      color: #FF6B6B;
+      font-size: 0.95rem;
+      text-align: center;
+      line-height: 1.6;
     }
-    .share-input input {
-      flex: 1;
-      font-size: 0.85rem;
-      color: #666;
-    }
-    .share-input button {
-      padding: 0.6rem 1rem;
-      font-size: 0.9rem;
-    }
-    .success-msg {
-      color: #4caf50;
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
-      display: none;
-    }
-    .info-msg {
-      background: #e3f2fd;
-      border-left: 4px solid #2196f3;
-      color: #1976d2;
-      padding: 0.8rem;
+    
+    .info-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
       margin-top: 1rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      display: none;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .wrapper {
+        max-width: 100%;
+      }
+      
+      .instruction {
+        font-size: 0.7rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      input {
+        font-size: 0.95rem;
+        padding: 1rem;
+      }
+      
+      .answer-container {
+        min-height: 180px;
+        padding: 1.2rem;
+      }
+      
+      #answer {
+        font-size: 0.9rem;
+        line-height: 1.8;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🔍 查询工具</h1>
-    <p class="subtitle">输入指令获取答案（支持用"/"合并查询）</p>
-    
-    <div class="input-group">
-      <input type="text" id="cmdInput" placeholder="例如：iphone17 或 iphone17/iphone16pro" autofocus>
-      <button onclick="showAnswer()">查询</button>
+  <div class="wrapper">
+    <div class="instruction">
+      输入指令查询 · 全小写无空格 · 合并查询用"/"连接<br/>
+      如：iphone17 或 iphone17/iphone16pro
     </div>
     
-    <div id="answer" class="empty">输入指令后，答案将显示在这里</div>
+    <div class="input-box">
+      <input 
+        type="text" 
+        id="cmdInput" 
+        placeholder="输入指令..." 
+        autofocus
+      >
+    </div>
     
-    <div class="info-msg" id="infoMsg"></div>
-    
-    <button class="copy-btn" onclick="copyAnswer()" style="display:none;" id="copyBtn">📋 复制答案</button>
-    
-    <div class="share-section">
-      <h3>🔗 生成分享链接</h3>
-      <div class="share-input">
-        <input type="text" id="shareUrl" readonly placeholder="分享链接将显示在这里">
-        <button onclick="copyLink()">复制链接</button>
-      </div>
-      <div class="success-msg" id="successMsg">✅ 已复制到剪贴板</div>
+    <div class="answer-container">
+      <div id="answer" class="empty-state">输入指令后，结果将显示在这里</div>
+      <div id="infoTag"></div>
     </div>
   </div>
 
@@ -191,12 +237,10 @@
     function getAnswer(cmd) {
       const trimmedCmd = cmd.trim().toLowerCase().replace(/\s+/g, '');
       
-      // 检查是否包含 "/"（多指令查询）
       if (trimmedCmd.includes('/')) {
         return getIntersectionAnswer(trimmedCmd);
       }
       
-      // 单指令查询
       if (answers[trimmedCmd]) {
         return answers[trimmedCmd];
       }
@@ -206,28 +250,23 @@
     function getIntersectionAnswer(cmd) {
       const commands = cmd.split('/').map(c => c.trim()).filter(c => c);
       
-      // 检查所有指令是否都存在
       for (const command of commands) {
         if (!answers[command]) {
-          return null; // 指令不存在
+          return null;
         }
       }
       
-      // 如果只有一个指令，直接返回
       if (commands.length === 1) {
         return answers[commands[0]];
       }
       
-      // 获取第一个指令的答案并转换为数组
       let result = new Set(answers[commands[0]].split('\n'));
       
-      // 与其他指令的答案取交集
       for (let i = 1; i < commands.length; i++) {
         const currentAnswers = new Set(answers[commands[i]].split('\n'));
         result = new Set([...result].filter(item => currentAnswers.has(item)));
       }
       
-      // 转换回字符串，保持原始顺序
       const firstList = answers[commands[0]].split('\n');
       const resultArray = firstList.filter(item => result.has(item));
       
@@ -237,78 +276,38 @@
     function showAnswer() {
       const cmd = document.getElementById('cmdInput').value.trim();
       const answerDiv = document.getElementById('answer');
-      const copyBtn = document.getElementById('copyBtn');
-      const infoMsg = document.getElementById('infoMsg');
+      const infoTag = document.getElementById('infoTag');
       
       if (!cmd) {
-        answerDiv.textContent = "请输入指令";
-        answerDiv.className = "empty";
-        copyBtn.style.display = "none";
-        infoMsg.style.display = "none";
+        answerDiv.textContent = '输入指令后，结果将显示在这里';
+        answerDiv.className = 'empty-state';
+        infoTag.innerHTML = '';
         return;
       }
 
       const result = getAnswer(cmd);
       if (result) {
         answerDiv.textContent = result;
-        answerDiv.className = "";
-        copyBtn.style.display = "inline-block";
+        answerDiv.className = '';
         
-        // 显示查询类型提示
         if (cmd.includes('/')) {
           const commands = cmd.split('/').length;
-          infoMsg.textContent = `✓ 显示${commands}个指令都包含的共同项`;
-          infoMsg.style.display = "block";
+          infoTag.innerHTML = `<div class="info-tag">共同项 · ${commands}个指令</div>`;
         } else {
-          infoMsg.style.display = "none";
+          infoTag.innerHTML = '';
         }
       } else {
         if (cmd.includes('/')) {
-          answerDiv.textContent = `❓ 查询失败\n\n请检查：\n1. 是否所有指令都存在\n2. 多个指令是否有共同项\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+          answerDiv.textContent = '❌ 查询失败\n检查指令是否存在或无共同项';
         } else {
-          answerDiv.textContent = `❓ 未找到"${cmd}"的答案\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+          answerDiv.textContent = `❌ 未找到"${cmd}"`;
         }
-        answerDiv.className = "";
-        copyBtn.style.display = "none";
-        infoMsg.style.display = "none";
+        answerDiv.className = 'error-state';
+        infoTag.innerHTML = '';
       }
-
-      // 更新分享链接
-      updateShareLink(cmd);
     }
 
-    function updateShareLink(cmd) {
-      const baseUrl = window.location.href.split('?')[0];
-      const shareUrl = `${baseUrl}?q=${encodeURIComponent(cmd)}`;
-      document.getElementById('shareUrl').value = shareUrl;
-    }
-
-    function copyAnswer() {
-      const answerDiv = document.getElementById('answer');
-      const text = answerDiv.textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        showSuccessMsg('答案已复制！');
-      });
-    }
-
-    function copyLink() {
-      const shareUrl = document.getElementById('shareUrl');
-      shareUrl.select();
-      navigator.clipboard.writeText(shareUrl.value).then(() => {
-        showSuccessMsg('链接已复制！');
-      });
-    }
-
-    function showSuccessMsg(msg) {
-      const successMsg = document.getElementById('successMsg');
-      successMsg.textContent = '✅ ' + msg;
-      successMsg.style.display = 'block';
-      setTimeout(() => {
-        successMsg.style.display = 'none';
-      }, 2000);
-    }
-
-    // 支持 URL 参数：?q=iphone17或?q=iphone17/iphone16pro
+    // 支持 URL 参数
     const urlParams = new URLSearchParams(window.location.search);
     const q = urlParams.get('q');
     if (q) {
@@ -316,12 +315,10 @@
       showAnswer();
     }
 
-    // 支持回车键
-    document.getElementById('cmdInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        showAnswer();
-      }
-    });
+    // 支持回车键和实时查询
+    const input = document.getElementById('cmdInput');
+    input.addEventListener('keyup', showAnswer);
+    input.addEventListener('input', showAnswer);
   </script>
 </body>
 </html>
