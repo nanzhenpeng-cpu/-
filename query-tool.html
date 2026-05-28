@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自定义查询工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    input {
+      flex: 1;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    button {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: bold;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    #answer {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 1.5rem;
+      border-radius: 8px;
+      min-height: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      word-break: break-word;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: #333;
+      font-size: 0.95rem;
+    }
+    #answer.empty {
+      color: #999;
+      font-style: italic;
+    }
+    .copy-btn {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background: #e0e0e0;
+    }
+    .share-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid #e0e0e0;
+    }
+    .share-section h3 {
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .share-input {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .share-input input {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .share-input button {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+    }
+    .success-msg {
+      color: #4caf50;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 查询工具</h1>
+    <p class="subtitle">输入指令获取答案</p>
+    
+    <div class="input-group">
+      <input type="text" id="cmdInput" placeholder="输入指令，例如：iPhone 17" autofocus>
+      <button onclick="showAnswer()">查询</button>
+    </div>
+    
+    <div id="answer" class="empty">输入指令后，答案将显示在这里</div>
+    
+    <button class="copy-btn" onclick="copyAnswer()" style="display:none;" id="copyBtn">📋 复制答案</button>
+    
+    <div class="share-section">
+      <h3>🔗 生成分享链接</h3>
+      <div class="share-input">
+        <input type="text" id="shareUrl" readonly placeholder="分享链接将显示在这里">
+        <button onclick="copyLink()">复制链接</button>
+      </div>
+      <div class="success-msg" id="successMsg">✅ 已复制到剪贴板</div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ 自定义指令 → 答案映射
+    const answers = {
+      "iPhone 17": "xiaomi\nhuawei\nsamsung\noneplus\nhonor\nvivo\ngalaxy\npixel\nGoogle\nnote\nmate\nmi\npro\nplus\npromax\nmax\nxs\nx\nxr\nxmax\n5\n5s\n6\n6s\n7\n8\n9\n10s\n11\n11pro\n11promax\n11plus\n12\n12pro\n12promax\n12mini\n13\n13pro\n13promax\n13mini\nMini\n14\n14pro\n14promax\n14plus\n15\n15pro\n15promax\n15plus\n16e\n16\n16pro\n16promax\n16plus\n17pro\n17promax\n17air\nair\nultra\ns21\ns22\ns23\ns24\ns25\nS25ultra\nS25plus\nS24ultra\nS24plus\nS23ultra\nS23plus\noppo\nipad",
+      "iPhone 17 air": "xiaomi\nhuawei\nsamsung\noneplus\nhonor\nvivo\ngalaxy\npixel\nGoogle\nnote\nmate\nmi\npro\nplus\npromax\nmax\nxs\nx\nxr\nxmax\n5\n5s\n6\n6s\n7\n8\n9\n10s\n11\n11pro\n11promax\n11plus\n12\n12pro\n12promax\n12mini\n13\n13pro\n13promax\n13mini\nMini\n14\n14pro\n14promax\n14plus\n15\n15pro\n15promax\n15plus\n16e\n16\n16pro\n16promax\n16plus\n17pro\n17promax\nultra\ns21\ns22\ns23\ns24\ns25\nS25ultra\nS25plus\nS24ultra\nS24plus\nS23ultra\nS23plus\noppo\nipad",
+      "iPhone 17 Pro": "xiaomi\nhuawei\nsamsung\noneplus\nhonor\nvivo\ngalaxy\npixel\nGoogle\nnote\nmate\nmi\nplus\npromax\nmax\nxs\nx\nxr\nxmax\n5\n5s\n6\n6s\n7\n8\n9\n10s\n11\n11pro\n11promax\n11plus\n12\n12pro\n12promax\n12mini\n13\n13pro\n13promax\n13mini\nMini\n14\n14pro\n14promax\n14plus\n15\n15pro\n15promax\n15plus\n16e\n16\n16pro\n16promax\n16plus\n17promax\n17air\nair\nultra\ns21\ns22\ns23\ns24\ns25\nS25ultra\nS25plus\nS24ultra\nS24plus\nS23ultra\nS23plus\noppo\nipad",
+      "iPhone 17 Pro Max": "xiaomi\nhuawei\nsamsung\noneplus\nhonor\nvivo\ngalaxy\npixel\nGoogle\nnote\nmate\nmi\nplus\nxs\nx\nxr\nxmax\n5\n5s\n6\n6s\n7\n8\n9\n10s\n11\n11pro\n11promax\n11plus\n12\n12pro\n12promax\n12mini\n13\n13pro\n13promax\n13mini\nMini\n14\n14pro\n14promax\n14plus\n15\n15pro\n15promax\n15plus\n16e\n16\n16pro\n16promax\n16plus\n17air\nair\nultra\ns21\ns22\ns23\ns24\ns25\nS25ultra\nS25plus\nS24ultra\nS24plus\nS23ultra\nS23plus\noppo\nipad"
+    };
+
+    function getAnswer(cmd) {
+      const trimmedCmd = cmd.trim();
+      // 精确匹配
+      if (answers[trimmedCmd]) {
+        return answers[trimmedCmd];
+      }
+      // 大小写不敏感的匹配
+      for (const key of Object.keys(answers)) {
+        if (key.toLowerCase() === trimmedCmd.toLowerCase()) {
+          return answers[key];
+        }
+      }
+      return null;
+    }
+
+    function showAnswer() {
+      const cmd = document.getElementById('cmdInput').value.trim();
+      const answerDiv = document.getElementById('answer');
+      const copyBtn = document.getElementById('copyBtn');
+      
+      if (!cmd) {
+        answerDiv.textContent = "请输入指令";
+        answerDiv.className = "empty";
+        copyBtn.style.display = "none";
+        return;
+      }
+
+      const result = getAnswer(cmd);
+      if (result) {
+        answerDiv.textContent = result;
+        answerDiv.className = "";
+        copyBtn.style.display = "inline-block";
+      } else {
+        answerDiv.textContent = `❓ 未找到"${cmd}"的答案\n\n可用指令：\n${Object.keys(answers).join('\n')}`;
+        answerDiv.className = "";
+        copyBtn.style.display = "none";
+      }
+
+      // 更新分享链接
+      updateShareLink(cmd);
+    }
+
+    function updateShareLink(cmd) {
+      const baseUrl = window.location.href.split('?')[0];
+      const shareUrl = `${baseUrl}?q=${encodeURIComponent(cmd)}`;
+      document.getElementById('shareUrl').value = shareUrl;
+    }
+
+    function copyAnswer() {
+      const answerDiv = document.getElementById('answer');
+      const text = answerDiv.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showSuccessMsg('答案已复制！');
+      });
+    }
+
+    function copyLink() {
+      const shareUrl = document.getElementById('shareUrl');
+      shareUrl.select();
+      navigator.clipboard.writeText(shareUrl.value).then(() => {
+        showSuccessMsg('链接已复制！');
+      });
+    }
+
+    function showSuccessMsg(msg) {
+      const successMsg = document.getElementById('successMsg');
+      successMsg.textContent = '✅ ' + msg;
+      successMsg.style.display = 'block';
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 2000);
+    }
+
+    // 支持 URL 参数：?q=iPhone%2017
+    const urlParams = new URLSearchParams(window.location.search);
+    const q = urlParams.get('q');
+    if (q) {
+      document.getElementById('cmdInput').value = q;
+      showAnswer();
+    }
+
+    // 支持回车键
+    document.getElementById('cmdInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        showAnswer();
+      }
+    });
+  </script>
+</body>
+</html>
